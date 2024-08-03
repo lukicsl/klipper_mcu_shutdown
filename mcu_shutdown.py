@@ -1,11 +1,8 @@
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import time
 import os
 import signal
 import sys
-
-while True:
-    time.sleep(1)
 
 # Configuration
 GPIO_PIN = 26
