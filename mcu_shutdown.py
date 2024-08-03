@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
-import subprocess
 import os
+import subprocess
 
 # Define GPIO pin
 GPIO_PIN = 26
@@ -12,6 +12,13 @@ LOW_DURATION_THRESHOLD = int(os.getenv('LOW_DURATION_THRESHOLD', 10))
 # Setup GPIO
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(GPIO_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+def shutdown_host():
+    try:
+        # Execute systemctl command to shut down the host
+        subprocess.run(['systemctl', 'poweroff'], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to shut down the host: {e}")
 
 def check_gpio():
     last_state = GPIO.input(GPIO_PIN)
@@ -28,8 +35,8 @@ def check_gpio():
             last_state = current_state
         
         if low_start_time and (time.time() - low_start_time >= LOW_DURATION_THRESHOLD):
-            print("GPIO pin {} is LOW for {} seconds. Shutting down...".format(GPIO_PIN, LOW_DURATION_THRESHOLD))
-            subprocess.run(["sudo", "shutdown", "-h", "now"], check=True)
+            print("GPIO pin {} is LOW for {} seconds. Shutting down the host...".format(GPIO_PIN, LOW_DURATION_THRESHOLD))
+            shutdown_host()
             return
 
         time.sleep(1)
