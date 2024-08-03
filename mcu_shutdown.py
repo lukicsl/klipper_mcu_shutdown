@@ -4,7 +4,7 @@ import os
 import signal
 import sys
 
-while True
+while True:
     time.sleep(1)
 
 # Configuration
