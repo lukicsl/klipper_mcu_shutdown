@@ -10,6 +10,9 @@ GPIO_PIN_SHUTDOWN_IMMEDIATE = 13
 # Duration in seconds for which the GPIO must remain low to trigger shutdown
 LOW_DURATION_THRESHOLD = int(os.getenv('LOW_DURATION_THRESHOLD', 10))
 
+# Initial delay in seconds to disable shutdown logic
+INITIAL_DELAY = 60
+
 # Setup GPIO
 GPIO.setwarnings(False)  # Disable GPIO warnings
 GPIO.setmode(GPIO.BCM)
@@ -24,6 +27,11 @@ def shutdown_host():
         print(f"Failed to shut down the host: {e}")
 
 def check_gpio():
+    # Initial delay to disable shutdown logic
+    print(f"Initial delay of {INITIAL_DELAY} seconds. Shutdown logic will be disabled during this period.")
+    time.sleep(INITIAL_DELAY)
+    print("Initial delay period is over. Shutdown logic is now enabled.")
+
     last_state_delay = GPIO.input(GPIO_PIN_SHUTDOWN_DELAY)
     low_start_time = None
 
@@ -32,7 +40,7 @@ def check_gpio():
         current_state_immediate = GPIO.input(GPIO_PIN_SHUTDOWN_IMMEDIATE)
 
         # Check for immediate shutdown
-        if current_state_immediate == GPIO.LOW:
+        if current_state_immediate == GPIO.HIGH:
             print(f"GPIO pin {GPIO_PIN_SHUTDOWN_IMMEDIATE} is LOW. Shutting down the host immediately...")
             shutdown_host()
             return
