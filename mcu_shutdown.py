@@ -3,15 +3,17 @@ import time
 import os
 import subprocess
 
-# Define GPIO pin
-GPIO_PIN = 26
+# Define GPIO pins
+GPIO_PIN_SHUTDOWN_DELAY = 26
+GPIO_PIN_SHUTDOWN_IMMEDIATE = 13
 
 # Duration in seconds for which the GPIO must remain low to trigger shutdown
 LOW_DURATION_THRESHOLD = int(os.getenv('LOW_DURATION_THRESHOLD', 10))
 
 # Setup GPIO
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(GPIO_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(GPIO_PIN_SHUTDOWN_DELAY, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(GPIO_PIN_SHUTDOWN_IMMEDIATE, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 def shutdown_host():
     try:
@@ -21,21 +23,30 @@ def shutdown_host():
         print(f"Failed to shut down the host: {e}")
 
 def check_gpio():
-    last_state = GPIO.input(GPIO_PIN)
+    last_state_delay = GPIO.input(GPIO_PIN_SHUTDOWN_DELAY)
     low_start_time = None
 
     while True:
-        current_state = GPIO.input(GPIO_PIN)
-        if current_state != last_state:
-            if current_state == GPIO.LOW:
+        current_state_delay = GPIO.input(GPIO_PIN_SHUTDOWN_DELAY)
+        current_state_immediate = GPIO.input(GPIO_PIN_SHUTDOWN_IMMEDIATE)
+
+        # Check for immediate shutdown
+        if current_state_immediate == GPIO.LOW:
+            print(f"GPIO pin {GPIO_PIN_SHUTDOWN_IMMEDIATE} is LOW. Shutting down the host immediately...")
+            shutdown_host()
+            return
+
+        # Check for delayed shutdown
+        if current_state_delay != last_state_delay:
+            if current_state_delay == GPIO.LOW:
                 low_start_time = time.time()
             else:
                 low_start_time = None
 
-            last_state = current_state
+            last_state_delay = current_state_delay
         
         if low_start_time and (time.time() - low_start_time >= LOW_DURATION_THRESHOLD):
-            print("GPIO pin {} is LOW for {} seconds. Shutting down the host...".format(GPIO_PIN, LOW_DURATION_THRESHOLD))
+            print(f"GPIO pin {GPIO_PIN_SHUTDOWN_DELAY} is LOW for {LOW_DURATION_THRESHOLD} seconds. Shutting down the host...")
             shutdown_host()
             return
 
