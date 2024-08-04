@@ -11,9 +11,10 @@ GPIO_PIN_SHUTDOWN_IMMEDIATE = 13
 LOW_DURATION_THRESHOLD = int(os.getenv('LOW_DURATION_THRESHOLD', 10))
 
 # Setup GPIO
+GPIO.setwarnings(False)  # Disable GPIO warnings
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(GPIO_PIN_SHUTDOWN_DELAY, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(GPIO_PIN_SHUTDOWN_IMMEDIATE, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(GPIO_PIN_SHUTDOWN_DELAY, GPIO.IN)  # No pull-up or pull-down
+GPIO.setup(GPIO_PIN_SHUTDOWN_IMMEDIATE, GPIO.IN)  # No pull-up or pull-down
 
 def shutdown_host():
     try:
@@ -59,3 +60,5 @@ if __name__ == "__main__":
         print("Program interrupted.")
     except Exception as e:
         print(f"An error occurred: {e}")
+    finally:
+        GPIO.cleanup()  # Clean up GPIO settings
