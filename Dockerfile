@@ -1,18 +1,24 @@
 # Use a lightweight base image with Python
 FROM python:3.9-slim
 
+# Install gnupg and other required packages
+RUN apt-get update && apt-get install -y \
+    gnupg \
+    gcc \
+    python3-dev \
+    sudo \
+    util-linux \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # Add the Raspberry Pi OS repository to sources.list
 RUN echo "deb http://archive.raspberrypi.org/debian/ buster main" > /etc/apt/sources.list.d/raspi.list
 
 # Add the Raspberry Pi OS public key
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 82B129927FA3303E
 
-# Install required packages and build tools
+# Install raspi-gpio
 RUN apt-get update && apt-get install -y \
-    gcc \
-    python3-dev \
-    sudo \
-    util-linux \
     raspi-gpio \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
