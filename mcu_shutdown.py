@@ -61,6 +61,8 @@ def check_gpio():
         # Check for immediate shutdown (polarity changed: high = shutdown)
         if current_state_immediate == 1:
             logging.debug(f"GPIO pin {GPIO_PIN_SHUTDOWN_IMMEDIATE} is HIGH. Shutting down the host immediately...")
+            # give time to moonrake to do it's stuff
+            time.sleep(20)
             shutdown_host()
             return
 
